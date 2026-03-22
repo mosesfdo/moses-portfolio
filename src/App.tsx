@@ -14,6 +14,9 @@ import projectFinance from './components/img/project_finance.png';
 import projectTunegrab from './components/img/project_tunegrab.png';
 import { ReactLenis } from 'lenis/react';
 
+const LETTERBOXD_USERNAME = 'mosesfdo';
+const MAL_USERNAME = 'mosesfdo';
+
 const EXPERIENCES = [
   {
     id: 1,
@@ -283,6 +286,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [hoveredExp, setHoveredExp] = useState<number | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [letterboxdMoviesWatched, setLetterboxdMoviesWatched] = useState<number | null>(null);
+  const [malAnimeCompleted, setMalAnimeCompleted] = useState<number | null>(null);
 
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -328,6 +333,35 @@ export default function App() {
       }
     }
   };
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const letterboxdUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://letterboxd.com/${LETTERBOXD_USERNAME}/`)}`;
+        const letterboxdResponse = await fetch(letterboxdUrl);
+        const letterboxdHtml = await letterboxdResponse.text();
+        const letterboxdMatch = letterboxdHtml.match(/logged\s+([\d,]+)\s+films/i);
+        if (letterboxdMatch?.[1]) {
+          setLetterboxdMoviesWatched(Number(letterboxdMatch[1].replace(/,/g, '')));
+        }
+      } catch (e) {
+        console.log('Letterboxd stats unavailable', e);
+      }
+
+      try {
+        const malResponse = await fetch(`https://api.jikan.moe/v4/users/${MAL_USERNAME}/statistics`);
+        const malJson = await malResponse.json();
+        const completed = malJson?.data?.anime?.completed;
+        if (typeof completed === 'number') {
+          setMalAnimeCompleted(completed);
+        }
+      } catch (e) {
+        console.log('MyAnimeList stats unavailable', e);
+      }
+    };
+
+    void fetchStats();
+  }, []);
 
   return (
     <ReactLenis root>
@@ -603,11 +637,45 @@ export default function App() {
                   <span className="w-8 h-[1px] bg-gray-400"></span> About Me
                 </h2>
                 <h3 className="text-4xl md:text-5xl lg:text-7xl font-display tracking-tight text-black mb-8 leading-[0.9]">
-                  BRIDGING THE GAP BETWEEN <span className="text-gray-400 italic font-serif">AI MODELS</span> AND <span className="text-gray-400 italic font-serif">HUMAN INTERFACES</span>.
+                  I JUST LOVE <span className="text-gray-400 italic">BUILDING COOL THINGS</span> THAT <span className="text-gray-400 italic">PEOPLE ACTUALLY USE</span>.
                 </h3>
-                <p className="text-lg md:text-xl text-gray-600 max-w-2xl leading-relaxed mb-12">
-                  I'm Moses, a student and Full-Stack Developer with a passion for AI/ML. I just want to build software and apps that people actually use... including myself.
+                <p className="text-lg md:text-xl font-serif text-gray-600 max-w-2xl leading-relaxed mb-12">
+                  I'm Moses — a developer who likes clean UI, useful products, and shipping fast. I work with web and AI tools, learn by building, and keep improving one project at a time.
                 </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12 max-w-2xl w-full">
+                  <a
+                    href={`https://letterboxd.com/${LETTERBOXD_USERNAME}/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-2xl border border-black/10 bg-white px-5 py-4 flex items-center justify-between hover:border-black/30 transition-colors interactive"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-xs uppercase tracking-[0.18em] text-gray-500 font-bold">Letterboxd</span>
+                      <span className="text-3xl text-black leading-none mt-2">
+                        {letterboxdMoviesWatched ?? '--'}
+                      </span>
+                      <span className="text-sm text-gray-500 mt-1">Movies watched</span>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-gray-500" />
+                  </a>
+
+                  <a
+                    href={`https://myanimelist.net/profile/${MAL_USERNAME}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-2xl border border-black/10 bg-white px-5 py-4 flex items-center justify-between hover:border-black/30 transition-colors interactive"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-xs uppercase tracking-[0.18em] text-gray-500 font-bold">MyAnimeList</span>
+                      <span className="text-3xl text-black leading-none mt-2">
+                        {malAnimeCompleted ?? '--'}
+                      </span>
+                      <span className="text-sm text-gray-500 mt-1">Anime completed</span>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-gray-500" />
+                  </a>
+                </div>
 
                 <Magnetic>
                   <a
@@ -643,7 +711,7 @@ export default function App() {
                   transition={{ delay: 0.6 }}
                   className="absolute -bottom-6 -left-6 md:-left-12 bg-white p-6 rounded-2xl shadow-xl border border-gray-100 max-w-[200px]"
                 >
-                  <div className="text-4xl font-display mb-1">100%</div>
+                  <div className="text-4xl mb-1">100%</div>
                   <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">Driven by curiosity</div>
                 </motion.div>
               </motion.div>
@@ -662,9 +730,9 @@ export default function App() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
               viewport={{ once: true }}
-              className="font-display text-5xl md:text-7xl lg:text-[7.5rem] leading-[0.9] font-bold tracking-tight uppercase text-center md:text-left text-black"
+              className="text-5xl md:text-7xl lg:text-[7.5rem] leading-[0.9] font-bold tracking-tight uppercase text-center md:text-left text-black"
             >
-              I JUST WANT TO BE PRODUCTIVE AND CALL IT A DAY.
+              MAKE IT SIMPLE. MAKE IT USEFUL. SHIP IT.
             </motion.h2>
           </div>
         </section>
